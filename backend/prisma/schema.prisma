@@ -35,10 +35,12 @@ model User {
 
 model Ruang {
   id           Int      @id @default(autoincrement())
-  externalId   String?  @unique // id dari webservice api-ruangan, kalau ada
+  externalId   String?  @unique // id dari webservice api-ruangan
+  kodeRuang    String?  @unique
   nama         String
-  lokasi       String?
+  namaGedung   String?
   kapasitas    Int      @default(0)
+  jenisRuang   String?  // kelas, pertemuan, rapat
   deskripsi    String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
