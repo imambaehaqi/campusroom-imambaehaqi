@@ -1,5 +1,5 @@
 import api from './api';
-import { Peminjaman, StatusPengajuan } from '../types';
+import type { Peminjaman, StatusPengajuan } from '../types';
 
 export const getLoans = async (params?: { status?: StatusPengajuan; search?: string }) => {
   const { data } = await api.get<Peminjaman[]>('/loans', { params });

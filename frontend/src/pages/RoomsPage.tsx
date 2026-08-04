@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { getRooms, createRoom, updateRoom, deleteRoom, syncRooms } from '../services/rooms.service';
-import { Ruang } from '../types';
+import type { Ruang } from '../types';
 import { useAuthStore } from '../stores/authStore';
 
 const emptyForm = { nama: '', namaGedung: '', kapasitas: 0, jenisRuang: '', deskripsi: '' };

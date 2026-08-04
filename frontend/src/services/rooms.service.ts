@@ -1,5 +1,5 @@
 import api from './api';
-import { Ruang } from '../types';
+import type { Ruang } from '../types';
 
 export const getRooms = async (params?: { search?: string; jenisRuang?: string; namaGedung?: string }) => {
   const { data } = await api.get<Ruang[]>('/rooms', { params });

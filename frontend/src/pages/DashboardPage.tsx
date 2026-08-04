@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getDashboardSummary } from '../services/dashboard.service';
-import { DashboardSummary } from '../types';
+import type { DashboardSummary } from '../types';
 import { format } from 'date-fns';
 
 const STATUS_COLORS: Record<string, string> = {

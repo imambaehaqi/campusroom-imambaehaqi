@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { getLoans, createLoan, updateLoanStatus, cancelLoan } from '../services/loans.service';
 import { getRooms } from '../services/rooms.service';
-import { Peminjaman, Ruang, StatusPengajuan } from '../types';
+import type { Peminjaman, Ruang, StatusPengajuan } from '../types';
 import { useAuthStore } from '../stores/authStore';
 
 const STATUS_COLORS: Record<string, string> = {
