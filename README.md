@@ -220,6 +220,26 @@ Mencakup:
 
 ---
 
+## Akses dari Perangkat Lain / Luar Jaringan (Opsional)
+
+Secara default, aplikasi hanya bisa diakses dari `localhost` di komputer yang menjalankannya. Untuk testing dari HP atau perangkat lain di luar jaringan, bisa menggunakan [ngrok](https://ngrok.com):
+
+```bash
+# Jalankan backend & frontend seperti biasa terlebih dahulu, lalu di terminal terpisah:
+ngrok http 3000   # tunnel untuk backend
+ngrok http 5173   # tunnel untuk frontend (jalankan di terminal lain)
+```
+
+Setelah itu:
+1. Update `frontend/.env` → `VITE_API_URL` diarahkan ke URL ngrok backend
+2. Update `backend/.env` → `CORS_ORIGIN` diarahkan ke URL ngrok frontend (atau `*` untuk testing cepat)
+3. Restart kedua server
+4. Akses URL ngrok frontend dari perangkat manapun
+
+> Catatan: `frontend/vite.config.ts` sudah dikonfigurasi dengan `allowedHosts: ['.ngrok-free.app']` dan `frontend/src/services/api.ts` sudah menyertakan header `ngrok-skip-browser-warning` supaya kompatibel dengan tunnel ngrok tanpa konfigurasi tambahan.
+
+Ini hanya untuk keperluan testing/demo sementara — bukan untuk deployment production.
+
 ## Catatan Teknis
 
 - Validasi anti-bentrok jadwal dilakukan dua kali: saat pengajuan dibuat (mencegah pengajuan yang pasti bentrok) dan saat admin menyetujui (memastikan data terkini, karena kondisi bisa berubah antara waktu pengajuan dan approval).
