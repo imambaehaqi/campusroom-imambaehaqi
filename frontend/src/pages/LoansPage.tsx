@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
@@ -96,10 +98,10 @@ export default function LoansPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Pengajuan Peminjaman</h1>
-          <p className="text-slate-500">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-800">Pengajuan Peminjaman</h1>
+          <p className="text-sm md:text-base text-slate-500">
             {isAdmin ? 'Kelola seluruh pengajuan peminjaman ruang' : 'Riwayat pengajuan peminjaman Anda'}
           </p>
         </div>
@@ -113,12 +115,12 @@ export default function LoansPage() {
         )}
       </div>
 
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
         {(['', 'MENUNGGU', 'DISETUJUI', 'DITOLAK', 'SELESAI'] as const).map((s) => (
           <button
             key={s}
             onClick={() => handleFilterChange(s)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-full border ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-full border shrink-0 ${
               statusFilter === s ? 'bg-slate-800 text-white border-slate-800' : 'border-slate-300 text-slate-600'
             }`}
           >
@@ -127,65 +129,109 @@ export default function LoansPage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
-            <tr>
-              <th className="px-4 py-3">Ruang</th>
-              {isAdmin && <th className="px-4 py-3">Pemohon</th>}
-              <th className="px-4 py-3">Keperluan</th>
-              <th className="px-4 py-3">Jadwal</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">Memuat...</td></tr>
-            ) : loans.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">Belum ada pengajuan.</td></tr>
-            ) : (
-              loans.map((loan) => (
-                <tr key={loan.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-700">{loan.ruang.nama}</td>
-                  {isAdmin && <td className="px-4 py-3 text-slate-500">{loan.user.name}</td>}
-                  <td className="px-4 py-3 text-slate-500">{loan.keperluan}</td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">
-                    {format(new Date(loan.tanggalMulai), 'dd MMM yyyy, HH:mm')} -{' '}
-                    {format(new Date(loan.tanggalSelesai), 'HH:mm')}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[loan.status]}`}>
-                      {loan.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right space-x-2">
-                    {isAdmin && loan.status === 'MENUNGGU' && (
+      {loading ? (
+        <p className="text-center text-slate-400 py-6">Memuat...</p>
+      ) : loans.length === 0 ? (
+        <p className="text-center text-slate-400 py-6">Belum ada pengajuan.</p>
+      ) : (
+        <>
+          {/* Mobile: card list */}
+          <div className="space-y-3 lg:hidden">
+            {loans.map((loan) => (
+              <div key={loan.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-800">{loan.ruang.nama}</p>
+                    {isAdmin && <p className="text-xs text-slate-500">{loan.user.name}</p>}
+                  </div>
+                  <span className={`shrink-0 px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[loan.status]}`}>
+                    {loan.status}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 mt-2">{loan.keperluan}</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {format(new Date(loan.tanggalMulai), 'dd MMM yyyy, HH:mm')} -{' '}
+                  {format(new Date(loan.tanggalSelesai), 'HH:mm')}
+                </p>
+                {(isAdmin || isDosen) && loan.status === 'MENUNGGU' && (
+                  <div className="flex gap-4 mt-3 pt-3 border-t border-slate-100">
+                    {isAdmin && (
                       <>
-                        <button onClick={() => handleApprove(loan.id)} className="text-emerald-600 hover:underline text-xs font-medium">
+                        <button onClick={() => handleApprove(loan.id)} className="text-emerald-600 text-xs font-medium">
                           Setujui
                         </button>
-                        <button onClick={() => handleReject(loan.id)} className="text-red-600 hover:underline text-xs font-medium">
+                        <button onClick={() => handleReject(loan.id)} className="text-red-600 text-xs font-medium">
                           Tolak
                         </button>
                       </>
                     )}
-                    {isDosen && loan.status === 'MENUNGGU' && (
-                      <button onClick={() => handleCancel(loan.id)} className="text-red-600 hover:underline text-xs font-medium">
+                    {isDosen && (
+                      <button onClick={() => handleCancel(loan.id)} className="text-red-600 text-xs font-medium">
                         Batalkan
                       </button>
                     )}
-                  </td>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden lg:block bg-white rounded-xl border border-slate-200 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                  <th className="px-4 py-3">Ruang</th>
+                  {isAdmin && <th className="px-4 py-3">Pemohon</th>}
+                  <th className="px-4 py-3">Keperluan</th>
+                  <th className="px-4 py-3">Jadwal</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Aksi</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {loans.map((loan) => (
+                  <tr key={loan.id} className="border-t border-slate-100 hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-700">{loan.ruang.nama}</td>
+                    {isAdmin && <td className="px-4 py-3 text-slate-500">{loan.user.name}</td>}
+                    <td className="px-4 py-3 text-slate-500">{loan.keperluan}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs">
+                      {format(new Date(loan.tanggalMulai), 'dd MMM yyyy, HH:mm')} -{' '}
+                      {format(new Date(loan.tanggalSelesai), 'HH:mm')}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${STATUS_COLORS[loan.status]}`}>
+                        {loan.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right space-x-2">
+                      {isAdmin && loan.status === 'MENUNGGU' && (
+                        <>
+                          <button onClick={() => handleApprove(loan.id)} className="text-emerald-600 hover:underline text-xs font-medium">
+                            Setujui
+                          </button>
+                          <button onClick={() => handleReject(loan.id)} className="text-red-600 hover:underline text-xs font-medium">
+                            Tolak
+                          </button>
+                        </>
+                      )}
+                      {isDosen && loan.status === 'MENUNGGU' && (
+                        <button onClick={() => handleCancel(loan.id)} className="text-red-600 hover:underline text-xs font-medium">
+                          Batalkan
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl p-5 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-800 mb-4">Ajukan Peminjaman</h2>
             <form onSubmit={handleCreate} className="space-y-3">
               <select

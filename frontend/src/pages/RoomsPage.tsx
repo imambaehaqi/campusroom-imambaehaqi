@@ -31,6 +31,7 @@ export default function RoomsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadRooms();
   }, []);
 
@@ -82,6 +83,7 @@ export default function RoomsPage() {
       }
       setShowModal(false);
       loadRooms(search);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Gagal menyimpan ruang');
     }
@@ -93,6 +95,7 @@ export default function RoomsPage() {
       await deleteRoom(id);
       toast.success('Ruang berhasil dihapus');
       loadRooms(search);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Gagal menghapus ruang');
     }
@@ -100,23 +103,23 @@ export default function RoomsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Data Ruang</h1>
-          <p className="text-slate-500">Kelola data ruang universitas</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-800">Data Ruang</h1>
+          <p className="text-sm md:text-base text-slate-500">Kelola data ruang universitas</p>
         </div>
         {isAdmin && (
           <div className="flex gap-2">
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-60"
+              className="flex-1 sm:flex-none px-3 md:px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 transition disabled:opacity-60"
             >
               {syncing ? 'Menyinkronkan...' : 'Sync Webservice'}
             </button>
             <button
               onClick={openCreateModal}
-              className="px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+              className="flex-1 sm:flex-none px-3 md:px-4 py-2 text-sm font-medium bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
             >
               + Tambah Ruang
             </button>
@@ -131,54 +134,85 @@ export default function RoomsPage() {
           placeholder="Cari nama ruang, gedung, atau kode..."
           className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm"
         />
-        <button type="submit" className="px-4 py-2 text-sm bg-slate-800 text-white rounded-lg hover:bg-slate-900">
+        <button type="submit" className="px-4 py-2 text-sm bg-slate-800 text-white rounded-lg hover:bg-slate-900 shrink-0">
           Cari
         </button>
       </form>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 text-left">
-            <tr>
-              <th className="px-4 py-3">Nama Ruang</th>
-              <th className="px-4 py-3">Gedung</th>
-              <th className="px-4 py-3">Kapasitas</th>
-              <th className="px-4 py-3">Jenis</th>
-              {isAdmin && <th className="px-4 py-3 text-right">Aksi</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-400">Memuat...</td></tr>
-            ) : rooms.length === 0 ? (
-              <tr><td colSpan={5} className="px-4 py-6 text-center text-slate-400">Tidak ada data ruang.</td></tr>
-            ) : (
-              rooms.map((room) => (
-                <tr key={room.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-700">{room.nama}</td>
-                  <td className="px-4 py-3 text-slate-500">{room.namaGedung || '-'}</td>
-                  <td className="px-4 py-3 text-slate-500">{room.kapasitas}</td>
-                  <td className="px-4 py-3 text-slate-500 capitalize">{room.jenisRuang || '-'}</td>
+      {loading ? (
+        <p className="text-center text-slate-400 py-6">Memuat...</p>
+      ) : rooms.length === 0 ? (
+        <p className="text-center text-slate-400 py-6">Tidak ada data ruang.</p>
+      ) : (
+        <>
+          {/* Mobile: card list */}
+          <div className="space-y-3 md:hidden">
+            {rooms.map((room) => (
+              <div key={room.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-medium text-slate-800">{room.nama}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{room.namaGedung || '-'}</p>
+                  </div>
                   {isAdmin && (
-                    <td className="px-4 py-3 text-right space-x-2">
-                      <button onClick={() => openEditModal(room)} className="text-primary-600 hover:underline text-xs font-medium">
+                    <div className="flex gap-3 shrink-0 pt-0.5">
+                      <button onClick={() => openEditModal(room)} className="text-primary-600 text-xs font-medium">
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(room.id)} className="text-red-600 hover:underline text-xs font-medium">
+                      <button onClick={() => handleDelete(room.id)} className="text-red-600 text-xs font-medium">
                         Hapus
                       </button>
-                    </td>
+                    </div>
                   )}
+                </div>
+                <div className="flex gap-4 mt-3 text-xs text-slate-500">
+                  <span>Kapasitas: <b className="text-slate-700">{room.kapasitas}</b></span>
+                  <span className="capitalize">Jenis: <b className="text-slate-700">{room.jenisRuang || '-'}</b></span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden md:block bg-white rounded-xl border border-slate-200 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-slate-500 text-left">
+                <tr>
+                  <th className="px-4 py-3">Nama Ruang</th>
+                  <th className="px-4 py-3">Gedung</th>
+                  <th className="px-4 py-3">Kapasitas</th>
+                  <th className="px-4 py-3">Jenis</th>
+                  {isAdmin && <th className="px-4 py-3 text-right">Aksi</th>}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {rooms.map((room) => (
+                  <tr key={room.id} className="border-t border-slate-100 hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-700">{room.nama}</td>
+                    <td className="px-4 py-3 text-slate-500">{room.namaGedung || '-'}</td>
+                    <td className="px-4 py-3 text-slate-500">{room.kapasitas}</td>
+                    <td className="px-4 py-3 text-slate-500 capitalize">{room.jenisRuang || '-'}</td>
+                    {isAdmin && (
+                      <td className="px-4 py-3 text-right space-x-2">
+                        <button onClick={() => openEditModal(room)} className="text-primary-600 hover:underline text-xs font-medium">
+                          Edit
+                        </button>
+                        <button onClick={() => handleDelete(room.id)} className="text-red-600 hover:underline text-xs font-medium">
+                          Hapus
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="bg-white rounded-xl p-5 md:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-800 mb-4">
               {editingId ? 'Edit Ruang' : 'Tambah Ruang'}
             </h2>
