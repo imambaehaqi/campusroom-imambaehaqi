@@ -9,6 +9,7 @@ Aplikasi manajemen peminjaman ruang kelas, laboratorium, dan ruang pertemuan di 
 - Prisma ORM + MySQL
 - JWT Authentication (Passport)
 - class-validator untuk validasi request
+- Jest untuk automated testing
 
 **Frontend**
 - React + Vite + TypeScript
@@ -17,6 +18,7 @@ Aplikasi manajemen peminjaman ruang kelas, laboratorium, dan ruang pertemuan di 
 - Zustand (state management)
 - Axios
 - React Hot Toast
+- Vitest + Testing Library untuk automated testing
 
 ## Struktur Project
 
@@ -25,20 +27,20 @@ campusroom-imambaehaqi/
 ├── backend/          # NestJS REST API
 │   ├── prisma/       # Schema, migration, seeder
 │   └── src/
-│       ├── auth/
-│       ├── rooms/
-│       ├── loans/
-│       ├── dashboard/
-│       ├── prisma/
-│       └── common/   # Guards, decorators
+│       ├── auth/          # Login, JWT strategy
+│       ├── rooms/         # CRUD ruang + sinkronisasi webservice
+│       ├── loans/         # CRUD pengajuan peminjaman + approval
+│       ├── dashboard/     # Ringkasan statistik
+│       ├── prisma/        # PrismaService
+│       └── common/        # Guards & decorators (roles, current-user)
 ├── frontend/          # React + Vite SPA
 │   └── src/
-│       ├── pages/
-│       ├── components/
-│       ├── services/
-│       ├── stores/
-│       ├── routes/
-│       └── types/
+│       ├── pages/          # Login, Dashboard, Rooms, Loans
+│       ├── components/     # Layout
+│       ├── services/       # API calls (axios)
+│       ├── stores/          # Zustand auth store
+│       ├── routes/         # ProtectedRoute
+│       └── types/          # TypeScript interfaces
 └── README.md
 ```
 
@@ -53,7 +55,7 @@ campusroom-imambaehaqi/
 - ✅ Validasi anti-bentrok jadwal (tidak boleh dua peminjaman disetujui di ruang & waktu yang sama)
 - ✅ Dashboard ringkasan peminjaman (statistik, riwayat terbaru, jadwal mendatang, ruang terpopuler)
 - ✅ Pencarian & filter data ruang dan pengajuan
-- ⏳ Automated testing (menyusul)
+- ✅ Automated testing (21 test case — 16 backend, 5 frontend)
 - ✅ UI responsif dengan TailwindCSS
 
 ## Aturan Bisnis
@@ -81,6 +83,11 @@ git clone git@github.com:imambaehaqi/campusroom-imambaehaqi.git
 cd campusroom-imambaehaqi
 ```
 
+Jika belum setup SSH key untuk GitHub, gunakan HTTPS:
+```bash
+git clone https://github.com/imambaehaqi/campusroom-imambaehaqi.git
+```
+
 ### 2. Setup Database
 
 Buat database MySQL baru:
@@ -96,10 +103,10 @@ cd backend
 npm install
 ```
 
-Buat file `.env` di folder `backend/` (copy dari `.env.example`):
+Buat file `.env` di folder `backend/`:
 
 ```env
-DATABASE_URL="mysql://root:@localhost:3306/campusroom"
+DATABASE_URL="mysql://root:password@localhost:3306/campusroom"
 JWT_SECRET="ganti_dengan_secret_yang_kuat"
 JWT_EXPIRES_IN="1d"
 PORT=3000
@@ -107,12 +114,13 @@ CORS_ORIGIN="http://localhost:5173"
 ROOMS_WEBSERVICE_URL="https://api-ruangan.vercel.app/rooms"
 ```
 
-> Sesuaikan `root:@` dengan username/password MySQL kamu.
+> Sesuaikan `root:password` dengan username/password MySQL kamu.
 
 Jalankan migration & seeder:
 
 ```bash
 npx prisma migrate dev
+npx prisma generate
 npx prisma db seed
 ```
 
@@ -149,12 +157,34 @@ Frontend berjalan di `http://localhost:5173`.
 
 ### 5. Sinkronisasi Data Ruang (opsional, setelah login sebagai Admin)
 
-Login sebagai admin, lalu klik tombol **"Sync Webservice"** di halaman Data Ruang, atau panggil langsung:
+Login sebagai admin, lalu klik tombol **"Sync Webservice"** di halaman Data Ruang.
 
+---
+
+## Menjalankan Automated Testing
+
+### Backend (Jest — 16 test case)
+
+```bash
+cd backend
+npm run test
 ```
-POST http://localhost:3000/rooms/sync/webservice
-Authorization: Bearer <token_admin>
+
+Mencakup:
+- `auth.service.spec.ts` — validasi login, hashing password, JWT payload
+- `loans.service.spec.ts` — validasi anti-bentrok jadwal, approval flow, error handling
+- `rooms.service.spec.ts` — CRUD ruang, sinkronisasi webservice
+
+### Frontend (Vitest — 5 test case)
+
+```bash
+cd frontend
+npm run test
 ```
+
+Mencakup:
+- `authStore.test.ts` — state management login/logout
+- `LoginPage.test.tsx` — rendering form & submit flow
 
 ---
 
@@ -195,6 +225,7 @@ Authorization: Bearer <token_admin>
 - Validasi anti-bentrok jadwal dilakukan dua kali: saat pengajuan dibuat (mencegah pengajuan yang pasti bentrok) dan saat admin menyetujui (memastikan data terkini, karena kondisi bisa berubah antara waktu pengajuan dan approval).
 - Sinkronisasi ruang dari webservice bersifat idempotent — menggunakan `externalId` sebagai key unik sehingga aman dijalankan berulang kali tanpa membuat data duplikat.
 - Dashboard menyesuaikan tampilan berdasarkan role: Dosen melihat ringkasan pengajuannya sendiri, Admin melihat ringkasan sistem secara keseluruhan.
+- Import TypeScript interface/type menggunakan `import type` untuk kompatibilitas dengan `verbatimModuleSyntax` di Vite/TypeScript versi terbaru.
 
 ## Kontak
 
