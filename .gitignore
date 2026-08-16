@@ -23,3 +23,7 @@ npm-debug.log*
 
 # Prisma
 backend/prisma/dev.db
+# Next.js
+frontend-nextjs/.next/
+frontend-nextjs/node_modules/
+frontend-nextjs/.env.local
